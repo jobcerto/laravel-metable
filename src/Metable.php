@@ -1,8 +1,6 @@
 <?php
 
-namespace Jobcerto\Metable\Traits;
-
-use App\Meta;
+namespace Jobcerto\Metable;
 
 trait Metable
 {
@@ -24,6 +22,13 @@ trait Metable
      */
     public function getMeta($key)
     {
+        // digamos que eu receba algo como item.teste
+
+        if (str_contains($key, '.')) {
+            return data_get($this->meta->where('key', str_before($key, '.'))->first()->value, str_after($key, '.'));
+        }
+
+        // preciso retornar o key item com os valores de teste
         if ($meta = $this->hasMeta($key)) {
             return $this->meta->where('key', $key)->first()->value;
         }
