@@ -1,21 +1,33 @@
 {
-    "name": "jobcerto/metable",
+    "name": "jobcerto/laravel-metable",
+    "description": "A package to give the possibility of add meta data to Eloquent Models",
+    "keywords": [
+        "jobcerto",
+        "laravel-metable"
+    ],
+    "homepage": "https://github.com/jobcerto/laravel-metable",
     "license": "MIT",
     "authors": [
         {
             "name": "Eduardo Geschonke",
-            "email": "edu@jobcerto.com"
+            "email": "edu@Jobcerto.com",
+            "homepage": "https://jobcerto.com",
+            "role": "Developer"
         }
     ],
-    "minimum-stability": "stable",
+    "require": {
+        "php": "^7.1"
+    },
     "autoload": {
         "psr-4": {
-            "Jobcerto\\Metable\\": "src/"
+            "Jobcerto\\Metable\\": "src"
         }
     },
     "extra": {
         "laravel": {
-            "providers": ["Jobcerto\\Metable\\MetableServiceProvider"]
+            "providers": [
+                "Jobcerto\\Metable\\MetableServiceProvider"
+            ]
         }
     }
 }

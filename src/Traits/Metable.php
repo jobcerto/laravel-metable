@@ -13,9 +13,15 @@ trait Metable
      */
     public function meta()
     {
-        return $this->morphMany(Meta::class, 'subject');
+        return $this->morphMany(config('metable.model'), 'subject');
     }
 
+    /**
+     * Get the given meta
+     *
+     * @param  string $key
+     * @return null|Meta
+     */
     public function getMeta($key)
     {
         if ($meta = $this->hasMeta($key)) {
@@ -29,7 +35,7 @@ trait Metable
      * Seta meta attributes
      *
      * @param string $key
-     * @param object App\Meta
+     * @param Meta
      */
     public function setMeta($key, $value)
     {
@@ -50,7 +56,7 @@ trait Metable
  *
  * @param  string $keys  accept dot notation
  * @param  mixed $value
- * @return object App\Meta
+ * @return Meta
  */
     public function updateMeta(string $keys, $value)
     {
