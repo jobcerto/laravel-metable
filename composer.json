@@ -1,0 +1,21 @@
+{
+    "name": "jobcerto/metable",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Eduardo Geschonke",
+            "email": "edu@jobcerto.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "Jobcerto\\Metable\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": ["Jobcerto\\Metable\\MetableServiceProvider"]
+        }
+    }
+}
