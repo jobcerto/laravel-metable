@@ -1,5 +1,5 @@
 <?php
-namespace Jobcerto\Metable;
+namespace Jobcerto\Metable\Models;
 
 use Illuminate\Database\Eloquent\Model;
 

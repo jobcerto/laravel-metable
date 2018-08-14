@@ -2,6 +2,8 @@
 
 namespace Jobcerto\Metable;
 
+use Jobcerto\Metable\Models\Meta;
+
 trait Metable
 {
     /**
@@ -11,7 +13,7 @@ trait Metable
      */
     public function meta()
     {
-        return $this->morphMany(config('metable.model'), 'subject');
+        return $this->morphMany(config('metable.meta_model'), 'subject');
     }
 
     /**
@@ -34,6 +36,22 @@ trait Metable
         }
 
         return null;
+    }
+
+    public function removeMeta($key, $index)
+    {
+        if (str_contains($key, '.')) {
+            throw new \Exception('You can\'t access the given meta with dot notation');
+        }
+
+        $meta = $this->meta->where('key', $key)->first();
+
+        $value = $meta->value;
+
+        array_forget($value, $index);
+        $this->updateMeta($key, $value);
+
+        return $meta->fresh();
     }
 
     /**
@@ -79,18 +97,14 @@ trait Metable
     {
         $this->replaceDotsWithArrows($keys);
 
-        $meta->update([
+        $meta->forceFill([
             $this->qualifiedValueName($keys) => $value,
-        ]);
+        ])->Save();
     }
 
     public function updateSingleMeta($meta, $value)
     {
-        if (is_array($value)) {
-            return $meta->update(['value' => array_replace_recursive(array_wrap($meta->value), $value)]);
-        }
-
-        return $meta->update(['value' => $value]);
+        return $meta->forceFill(['value' => $value])->save();
     }
 
     public function qualifiedValueName($keys)
