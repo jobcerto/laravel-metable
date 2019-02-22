@@ -6,6 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 class Meta extends Model
 {
     /**
+     * The database table used by the model.
+     *
+     * @var string
+     */
+    protected $table = 'metable';
+    /**
      * Fields that can be mass assigned.
      *
      * @var array
@@ -32,4 +38,5 @@ class Meta extends Model
     {
         return $this->morphTo('subject');
     }
+
 }
