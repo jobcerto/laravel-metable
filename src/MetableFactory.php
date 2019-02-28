@@ -49,6 +49,7 @@ class MetableFactory implements Arrayable
                 return $this->fromJson($value, true);
             case 'array':
             case 'json':
+                return $this->fromJson($value);
             case 'collection':
                 return new Collection($this->fromJson($value));
             default:
