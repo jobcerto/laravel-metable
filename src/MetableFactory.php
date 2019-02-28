@@ -3,6 +3,7 @@
 namespace Jobcerto\Metable;
 
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Support\Collection;
 
 class MetableFactory implements Arrayable
 {
@@ -30,9 +31,36 @@ class MetableFactory implements Arrayable
         return tap($meta)->update(['value' => $newValue]);
     }
 
-    public function find(string $key)
+    public function find(string $key, $castable = null)
     {
-        return $this->raw($key)->value;
+
+        $value = $this->raw($key)->value;
+
+        switch ($castable) {
+            case 'int':
+            case 'integer':
+                return (int) $value;
+            case 'string':
+                return (string) $value;
+            case 'bool':
+            case 'boolean':
+                return (bool) $value;
+            case 'object':
+                return $this->fromJson($value, true);
+            case 'array':
+            case 'json':
+            case 'collection':
+                return new Collection($this->fromJson($value));
+            default:
+                return $value;
+        }
+    }
+
+    public function findMany(...$keys)
+    {
+        return collect($keys)->mapWithKeys(function ($key) {
+            return [$key => $this->raw($key)->value];
+        });
     }
 
     public function delete(string $key)
@@ -106,5 +134,17 @@ class MetableFactory implements Arrayable
     private function raw(string $key)
     {
         return $this->subject->metable()->where('key', $key)->firstOrFail();
+    }
+
+    /**
+     * Decode the given JSON back into an array or object.
+     *
+     * @param  string  $value
+     * @param  bool  $asObject
+     * @return mixed
+     */
+    private function fromJson($value, $asObject = false)
+    {
+        return json_decode(json_encode($value), ! $asObject);
     }
 }
