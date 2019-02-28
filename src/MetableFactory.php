@@ -37,7 +37,7 @@ class MetableFactory implements Arrayable
 
     public function delete(string $key)
     {
-        $this->raw($key)->delete();
+        return $this->raw($key)->delete();
     }
 
     public function has(string $key)
@@ -47,6 +47,11 @@ class MetableFactory implements Arrayable
 
     public function search(string $dotNotation, $default = null)
     {
+
+        if ( ! str_contains($dotNotation, '.')) {
+            return $this->find($dotNotation);
+        }
+
         $key = $this->getFirstKey($dotNotation);
         $meta = $this->find($key);
 
@@ -60,14 +65,16 @@ class MetableFactory implements Arrayable
 
         $meta = $this->raw($this->getFirstKey($dotNotation));
 
-        $meta->forceFill([
+        tap($meta)->forceFill([
             $this->qualifiedValueName($dotNotation) => $value,
         ])->save();
+
+        return $meta;
     }
 
     public function toArray()
     {
-        return $this->all();
+        return collect($this->all())->toArray();
     }
 
     private function qualifiedValueName($keys)
@@ -100,5 +107,4 @@ class MetableFactory implements Arrayable
     {
         return $this->subject->metable()->where('key', $key)->firstOrFail();
     }
-
 }
