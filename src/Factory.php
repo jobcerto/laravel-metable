@@ -5,7 +5,7 @@ namespace Jobcerto\Metable;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
 
-class MetableFactory implements Arrayable
+class Factory implements Arrayable
 {
     protected $subject;
 
@@ -14,53 +14,50 @@ class MetableFactory implements Arrayable
         $this->subject = $subject;
     }
 
+    /**
+     * Get an collection of meta values
+     *
+     * @return Illuminate\Support\Collection
+     */
     public function all()
     {
-        return $this->subject->metable;
+        return $this->subject->metable->pluck('value', 'key');
     }
 
-    public function create(string $key, $value)
+    public function set(string $key, $value)
     {
-        return $this->subject->metable()->create(['key' => $key, 'value' => $value]);
-    }
+        if (str_contains($key, '.')) {
+            throw new \Exception('you can\'t add a meta using dots on a key');
+        }
 
-    public function update(string $key, $newValue)
-    {
         $meta = $this->raw($key);
 
-        return tap($meta)->update(['value' => $newValue]);
+        $meta ? $meta->update(['value' => $value])
+        : $this->subject->metable()->create(['key' => $key, 'value' => $value]);
+
+        return $this->get($key);
     }
 
-    public function find(string $key, $castable = null)
+    public function get(string $key, $castable = null)
     {
+
+        if (str_contains($key, '.')) {
+            return $this->search($key);
+        }
+
+        if ( ! $this->has($key)) {
+            return null;
+        }
 
         $value = $this->raw($key)->value;
 
-        switch ($castable) {
-            case 'int':
-            case 'integer':
-                return (int) $value;
-            case 'string':
-                return (string) $value;
-            case 'bool':
-            case 'boolean':
-                return (bool) $value;
-            case 'object':
-                return $this->fromJson($value, true);
-            case 'array':
-            case 'json':
-                return $this->fromJson($value);
-            case 'collection':
-                return new Collection($this->fromJson($value));
-            default:
-                return $value;
-        }
+        return $this->castable($value, $castable);
     }
 
-    public function findMany(...$keys)
+    public function only(...$keys)
     {
         return collect($keys)->mapWithKeys(function ($key) {
-            return [$key => $this->raw($key)->value];
+            return [$key => $this->get($key)];
         });
     }
 
@@ -78,11 +75,11 @@ class MetableFactory implements Arrayable
     {
 
         if ( ! str_contains($dotNotation, '.')) {
-            return $this->find($dotNotation);
+            return $this->get($dotNotation);
         }
 
         $key = $this->getFirstKey($dotNotation);
-        $meta = $this->find($key);
+        $meta = $this->get($key);
 
         return data_get($meta, str_after($dotNotation, $key . '.'), $default);
     }
@@ -103,7 +100,7 @@ class MetableFactory implements Arrayable
 
     public function toArray()
     {
-        return collect($this->all())->toArray();
+        return $this->all()->toArray();
     }
 
     private function qualifiedValueName($keys)
@@ -134,7 +131,7 @@ class MetableFactory implements Arrayable
 
     private function raw(string $key)
     {
-        return $this->subject->metable()->where('key', $key)->firstOrFail();
+        return $this->subject->metable()->where('key', $key)->first();
     }
 
     /**
@@ -147,5 +144,28 @@ class MetableFactory implements Arrayable
     private function fromJson($value, $asObject = false)
     {
         return json_decode(json_encode($value), ! $asObject);
+    }
+
+    private function castable($value, $castable)
+    {
+        switch ($castable) {
+            case 'int':
+            case 'integer':
+                return (int) $value;
+            case 'string':
+                return (string) $value;
+            case 'bool':
+            case 'boolean':
+                return (bool) $value;
+            case 'object':
+                return $this->fromJson($value, true);
+            case 'array':
+            case 'json':
+                return $this->fromJson($value);
+            case 'collection':
+                return new Collection($this->fromJson($value));
+            default:
+                return $value;
+        }
     }
 }
