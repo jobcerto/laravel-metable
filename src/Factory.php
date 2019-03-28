@@ -46,6 +46,10 @@ class Factory implements Arrayable
         }
 
         if ( ! $this->has($key)) {
+            if ($this->wantsReturnDefault($castable)) {
+                return $castable;
+            }
+
             return null;
         }
 
@@ -134,6 +138,11 @@ class Factory implements Arrayable
         return $this->subject->metable()->where('key', $key)->first();
     }
 
+    public function wantsReturnDefault($castable)
+    {
+        return ! in_array($castable, ['int', 'integer', 'string', 'bool', 'boolean', 'object', 'array', 'json', 'collection']) && ! is_null($castable);
+    }
+
     /**
      * Decode the given JSON back into an array or object.
      *
@@ -148,6 +157,7 @@ class Factory implements Arrayable
 
     private function castable($value, $castable)
     {
+
         switch ($castable) {
             case 'int':
             case 'integer':

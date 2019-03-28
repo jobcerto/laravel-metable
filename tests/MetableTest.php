@@ -68,6 +68,16 @@ class MetableTest extends TestCase
     }
 
     /** @test */
+    public function it_can_assin_a_default_value_when_not_defining_an_castable_attribute()
+    {
+
+        $this->post->meta->set('tags', $this->tags);
+
+        $this->assertEquals('default-value', $this->post->meta->get('unknown-meta', 'default-value'));
+
+    }
+
+    /** @test */
     public function it_can_find_a_single_meta_and_casts_to_object()
     {
 
