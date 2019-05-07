@@ -45,6 +45,15 @@ class MetableTest extends TestCase
     }
 
     /** @test */
+    public function it_can_find_a_value_using_get_and_return_default()
+    {
+        $this->post->meta->get('tags', $this->tags);
+
+        $this->assertIsArray($this->post->meta->get('tags.4', []));
+
+    }
+
+    /** @test */
     public function it_can_update_all_attributes()
     {
 

@@ -42,7 +42,7 @@ class Factory implements Arrayable
     {
 
         if (str_contains($key, '.')) {
-            return $this->search($key);
+            return $this->search($key, $castable);
         }
 
         if ( ! $this->has($key)) {
