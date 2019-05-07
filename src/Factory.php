@@ -46,6 +46,10 @@ class Factory implements Arrayable
         }
 
         if ( ! $this->has($key)) {
+            if (is_callable($castable)) {
+                return call_user_func($castable);
+            }
+
             if ($this->wantsReturnDefault($castable)) {
                 return $castable;
             }

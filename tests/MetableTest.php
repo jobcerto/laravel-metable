@@ -35,6 +35,16 @@ class MetableTest extends TestCase
     }
 
     /** @test */
+    public function it_can_assin_a_default_value_when_not_find_the_meta()
+    {
+        $meta = $this->post->meta->get('fake-meta', function () {
+            return [];
+        });
+
+        $this->assertIsArray($meta);
+    }
+
+    /** @test */
     public function it_can_update_all_attributes()
     {
 
