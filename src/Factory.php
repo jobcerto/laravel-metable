@@ -24,6 +24,11 @@ class Factory implements Arrayable
         return $this->subject->metable->pluck('value', 'key');
     }
 
+    /**
+     * [set description]
+     * @param string $key   [description]
+     * @param [type] $value [description]
+     */
     public function set(string $key, $value)
     {
         if (str_contains($key, '.')) {
@@ -38,30 +43,55 @@ class Factory implements Arrayable
         return $this->get($key);
     }
 
+    /**
+     * [get description]
+     * @param  string $key      [description]
+     * @param  [type] $castable [description]
+     * @return [type]           [description]
+     */
     public function get(string $key, $castable = null)
     {
 
         if (str_contains($key, '.')) {
-            return $this->search($key, $castable);
+            return $this->findViaDotNotation($key, $castable);
         }
 
         if ( ! $this->has($key)) {
-            if (is_callable($castable)) {
-                return call_user_func($castable);
-            }
-
-            if ($this->wantsReturnDefault($castable)) {
-                return $castable;
-            }
-
-            return null;
+            return $this->tryCallableOrDefault($castable);
         }
 
         $value = $this->raw($key)->value;
 
+        if (is_callable($castable)) {
+            return call_user_func($castable, $value);
+        }
+
         return $this->castable($value, $castable);
     }
 
+    /**
+     * [tryCallableOrDefault description]
+     * @param  [type] $castable [description]
+     * @return [type]           [description]
+     */
+    private function tryCallableOrDefault($castable)
+    {
+        if (is_callable($castable)) {
+            return call_user_func($castable);
+        }
+
+        if ($this->wantsReturnDefault($castable)) {
+            return $castable;
+        }
+
+        return null;
+    }
+
+    /**
+     * [only description]
+     * @param  [type] $keys [description]
+     * @return [type]       [description]
+     */
     public function only(...$keys)
     {
         return collect($keys)->mapWithKeys(function ($key) {
@@ -69,29 +99,52 @@ class Factory implements Arrayable
         });
     }
 
+    /**
+     * [delete description]
+     * @param  string $key [description]
+     * @return [type]      [description]
+     */
     public function delete(string $key)
     {
         return $this->raw($key)->delete();
     }
 
+    /**
+     * [has description]
+     * @param  string  $key [description]
+     * @return boolean      [description]
+     */
     public function has(string $key)
     {
         return $this->subject->metable()->where('key', $key)->exists();
     }
 
-    public function search(string $dotNotation, $default = null)
+    /**
+     * [findViaDotNotation description]
+     * @param  string $dotNotation [description]
+     * @param  [type] $default     [description]
+     * @return [type]              [description]
+     */
+    protected function findViaDotNotation(string $dotNotation, $default = null)
     {
-
-        if ( ! str_contains($dotNotation, '.')) {
-            return $this->get($dotNotation);
-        }
-
         $key = $this->getFirstKey($dotNotation);
         $meta = $this->get($key);
 
-        return data_get($meta, str_after($dotNotation, $key . '.'), $default);
+        $value = data_get($meta, str_after($dotNotation, $key . '.'), $default);
+
+        if ($value !== $default) {
+            return is_callable($default) ? call_user_func($default, $value) : $value;
+        }
+
+        return $value;
     }
 
+    /**
+     * [replace description]
+     * @param  string $dotNotation [description]
+     * @param  [type] $value       [description]
+     * @return [type]              [description]
+     */
     public function replace(string $dotNotation, $value)
     {
 
@@ -106,16 +159,30 @@ class Factory implements Arrayable
         return $meta;
     }
 
+    /**
+     * [toArray description]
+     * @return [type] [description]
+     */
     public function toArray()
     {
         return $this->all()->toArray();
     }
 
+    /**
+     * [qualifiedValueName description]
+     * @param  [type] $keys [description]
+     * @return [type]       [description]
+     */
     private function qualifiedValueName($keys)
     {
         return 'value->' . $this->getUpdatableAttributes($keys);
     }
 
+    /**
+     * [getUpdatableAttributes description]
+     * @param  [type] $keys [description]
+     * @return [type]       [description]
+     */
     private function getUpdatableAttributes($keys)
     {
         return str_after($this->replaceDotsWithArrows($keys), '->');
@@ -132,16 +199,36 @@ class Factory implements Arrayable
         return str_before($this->replaceDotsWithArrows($keys), '->');
     }
 
+    /**
+     * Replace Dots With Arrows
+     * @param  string $keys
+     *
+     * @return stirng
+     */
     private function replaceDotsWithArrows($keys)
     {
         return preg_replace('/\./', '->', $keys);
     }
 
+    /**
+     * Get Raw Value of meta
+     *
+     * @param  string $key
+     *
+     * @return mixed
+     */
     private function raw(string $key)
     {
         return $this->subject->metable()->where('key', $key)->first();
     }
 
+    /**
+     * Determine if wants return the default value
+     *
+     * @param  mixed $castable
+     *
+     * @return bool
+     */
     public function wantsReturnDefault($castable)
     {
         return ! in_array($castable, ['int', 'integer', 'string', 'bool', 'boolean', 'object', 'array', 'json', 'collection']) && ! is_null($castable);
@@ -152,6 +239,7 @@ class Factory implements Arrayable
      *
      * @param  string  $value
      * @param  bool  $asObject
+     *
      * @return mixed
      */
     private function fromJson($value, $asObject = false)
@@ -159,6 +247,14 @@ class Factory implements Arrayable
         return json_decode(json_encode($value), ! $asObject);
     }
 
+    /**
+     * Cast the given value
+     *
+     * @param mixed $value
+     * @param  mixed $castable
+     *
+     * @return mixed
+     */
     private function castable($value, $castable)
     {
 

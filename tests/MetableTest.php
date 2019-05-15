@@ -35,6 +35,43 @@ class MetableTest extends TestCase
     }
 
     /** @test */
+    public function it_can_transform_values()
+    {
+
+        $this->post->meta->set('tags', $this->tags);
+
+        $tags = $this->post->meta->get('tags', function ($tags) {
+            return $tags;
+        });
+
+        $this->assertEquals($tags, $this->tags);
+    }
+
+    /** @test */
+    public function it_can_transform_nested_values()
+    {
+
+        $this->post->meta->set('countries', ['brasil' => ['RS', 'SP', 'SC']]);
+
+        $states = $this->post->meta->get('countries.brasil', function ($states) {
+            return collect($states);
+        });
+
+        $rs = $this->post->meta->get('countries.brasil.0', function ($rs) {
+            return $rs . '-transformed';
+        });
+
+        $lowercase = $this->post->meta->get('countries.brasil.0', function ($rs) {
+            return strtolower($rs);
+        });
+
+        $this->assertInstanceOf(Collection::class, $states);
+
+        $this->assertEquals('RS-transformed', $rs);
+        $this->assertEquals('rs', $lowercase);
+    }
+
+    /** @test */
     public function it_can_assin_a_default_value_when_not_find_the_meta()
     {
         $meta = $this->post->meta->get('fake-meta', function () {
@@ -163,7 +200,7 @@ class MetableTest extends TestCase
 
         $this->post->meta->set('tags', $this->tags);
 
-        $this->assertEquals($this->post->fresh()->meta->get('tags'), $this->post->fresh()->meta->search('tags'));
+        $this->assertEquals($this->post->fresh()->meta->get('tags'), $this->post->fresh()->meta->get('tags'));
     }
 
     /** @test */
@@ -210,9 +247,9 @@ class MetableTest extends TestCase
 
         $this->post->meta->set('countries', $attributes);
 
-        $this->assertEquals('brasil', $this->post->meta->search('countries.br'));
+        $this->assertEquals('brasil', $this->post->meta->get('countries.br'));
 
-        $this->assertEquals('Estados Únidos', $this->post->meta->search('countries.eu'));
+        $this->assertEquals('Estados Únidos', $this->post->meta->get('countries.eu'));
 
     }
 
@@ -227,9 +264,9 @@ class MetableTest extends TestCase
 
         $this->post->meta->set('countries', $attributes);
 
-        $this->assertNull($this->post->meta->search('countries.something-that-is-fake'));
+        $this->assertNull($this->post->meta->get('countries.something-that-is-fake'));
 
-        $this->assertEquals('my-custom-value', $this->post->meta->search('countries.something-that-is-fake', 'my-custom-value'));
+        $this->assertEquals('my-custom-value', $this->post->meta->get('countries.something-that-is-fake', 'my-custom-value'));
     }
 
     /** @test */
@@ -252,7 +289,7 @@ class MetableTest extends TestCase
 
         $this->post->meta->replace('countries.br', 'novo valor');
 
-        $this->assertEquals('novo valor', $this->post->meta->search('countries.br'));
+        $this->assertEquals('novo valor', $this->post->meta->get('countries.br'));
     }
 
     /** @test */
@@ -268,7 +305,7 @@ class MetableTest extends TestCase
 
         $this->post->meta->replace('countries.ru', 'Russia');
 
-        $this->assertEquals('Russia', $this->post->meta->search('countries.ru'));
+        $this->assertEquals('Russia', $this->post->meta->get('countries.ru'));
 
         $countriesWithNewAddedValue = [
             'br' => 'brazil',
