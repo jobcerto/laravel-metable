@@ -49,7 +49,7 @@ class Factory implements Arrayable
      * @param  [type] $castable [description]
      * @return [type]           [description]
      */
-    public function get(string $key, $castable = null)
+    public function get(string $key, $castable = null, $ignoreTransformation = false)
     {
 
         if (str_contains($key, '.')) {
@@ -63,7 +63,10 @@ class Factory implements Arrayable
         $value = $this->raw($key)->value;
 
         if (is_callable($castable)) {
-            return call_user_func($castable, $value);
+
+            if (! $ignoreTransformation) {
+                return call_user_func($castable, $value);
+            }
         }
 
         return $this->castable($value, $castable);
@@ -261,21 +264,21 @@ class Factory implements Arrayable
         switch ($castable) {
             case 'int':
             case 'integer':
-                return (int) $value;
+            return (int) $value;
             case 'string':
-                return (string) $value;
+            return (string) $value;
             case 'bool':
             case 'boolean':
-                return (bool) $value;
+            return (bool) $value;
             case 'object':
-                return $this->fromJson($value, true);
+            return $this->fromJson($value, true);
             case 'array':
             case 'json':
-                return $this->fromJson($value);
+            return $this->fromJson($value);
             case 'collection':
-                return new Collection($this->fromJson($value));
+            return new Collection($this->fromJson($value));
             default:
-                return $value;
+            return $value;
         }
     }
 }
