@@ -48,6 +48,19 @@ class MetableTest extends TestCase
     }
 
     /** @test */
+    public function it_can_ignore_transformation_of_values()
+    {
+
+        $this->post->meta->set('tags', $this->tags);
+
+        $tags = $this->post->meta->get('tags', function ($tags) {
+            return [];
+        }, true);
+
+        $this->assertEquals($tags, $this->tags);
+    }
+
+    /** @test */
     public function it_can_transform_nested_values()
     {
 
@@ -84,7 +97,7 @@ class MetableTest extends TestCase
     /** @test */
     public function it_can_find_a_value_using_get_and_return_default()
     {
-        $this->post->meta->get('tags', $this->tags);
+        $this->post->meta->set('tags', $this->tags);
 
         $this->assertIsArray($this->post->meta->get('tags.4', []));
 
