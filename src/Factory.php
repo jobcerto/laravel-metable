@@ -49,7 +49,7 @@ class Factory implements Arrayable
      * @param  [type] $castable [description]
      * @return [type]           [description]
      */
-    public function get(string $key, $castable = null, $ignoreTransformation = false)
+    public function get(string $key, $castable = null)
     {
 
         if (str_contains($key, '.')) {
@@ -63,10 +63,7 @@ class Factory implements Arrayable
         $value = $this->raw($key)->value;
 
         if (is_callable($castable)) {
-
-            if (! $ignoreTransformation) {
-                return call_user_func($castable, $value);
-            }
+            return call_user_func($castable, $value);
         }
 
         return $this->castable($value, $castable);
@@ -80,7 +77,7 @@ class Factory implements Arrayable
     private function tryCallableOrDefault($castable)
     {
         if (is_callable($castable)) {
-            return call_user_func($castable);
+            return $castable(null);
         }
 
         if ($this->wantsReturnDefault($castable)) {
@@ -131,6 +128,7 @@ class Factory implements Arrayable
     protected function findViaDotNotation(string $dotNotation, $default = null)
     {
         $key = $this->getFirstKey($dotNotation);
+
         $meta = $this->get($key);
 
         $value = data_get($meta, str_after($dotNotation, $key . '.'), $default);
@@ -264,21 +262,26 @@ class Factory implements Arrayable
         switch ($castable) {
             case 'int':
             case 'integer':
-            return (int) $value;
+                return (int) $value;
             case 'string':
-            return (string) $value;
+                return (string) $value;
             case 'bool':
             case 'boolean':
-            return (bool) $value;
+                return (bool) $value;
             case 'object':
-            return $this->fromJson($value, true);
+                return $this->fromJson($value, true);
             case 'array':
             case 'json':
-            return $this->fromJson($value);
+                return $this->fromJson($value);
             case 'collection':
-            return new Collection($this->fromJson($value));
+                return new Collection($this->fromJson($value));
             default:
-            return $value;
+                return $value;
         }
+    }
+
+    public function __toString()
+    {
+        return $this->string;
     }
 }
