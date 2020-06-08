@@ -16,13 +16,13 @@
         }
     ],
     "require": {
-        "php": "^7.1",
-        "illuminate/support": "5.8.*"
-
+        "php": "^7.2",
+        "illuminate/support": "^7.0",
+        "laravel/helpers": "^1.2"
     },
     "require-dev": {
-        "orchestra/testbench": "3.8.*",
-        "phpunit/phpunit": "^7.0"
+        "orchestra/testbench": "^5.3",
+        "phpunit/phpunit": "^8.5"
     },
     "autoload": {
         "psr-4": {
@@ -42,6 +42,12 @@
             "providers": [
                 "Jobcerto\\Metable\\MetableServiceProvider"
             ]
+        }
+    },
+    "repositories": {
+        "packagist.org": {
+            "type": "composer",
+            "url": "https://repo-eu-uk-1.packagist.org"
         }
     }
 }

@@ -10,4 +10,11 @@ class Post extends Model
     use Metable;
 
     protected $guarded = [];
+
+    /**
+    * The relations to eager load on every query.
+    *
+    * @var array
+    */
+    protected $with = ['metable'];
 }

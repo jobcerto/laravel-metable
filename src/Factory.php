@@ -11,7 +11,17 @@ class Factory implements Arrayable
 
     public function __construct($subject)
     {
-        $this->subject = $subject;
+        $this->subject = $subject->load('metable');
+
+    }
+
+    public function relation()
+    {
+        if ($this->subject->relationLoaded('metable')) {
+            return $this->subject->metable;
+        }
+
+        return $this->subject->metable();
     }
 
     /**
@@ -21,7 +31,8 @@ class Factory implements Arrayable
      */
     public function all()
     {
-        return $this->subject->metable->pluck('value', 'key');
+
+        return $this->relation()->pluck('value', 'key');
     }
 
     /**
@@ -262,21 +273,21 @@ class Factory implements Arrayable
         switch ($castable) {
             case 'int':
             case 'integer':
-                return (int) $value;
+            return (int) $value;
             case 'string':
-                return (string) $value;
+            return (string) $value;
             case 'bool':
             case 'boolean':
-                return (bool) $value;
+            return (bool) $value;
             case 'object':
-                return $this->fromJson($value, true);
+            return $this->fromJson($value, true);
             case 'array':
             case 'json':
-                return $this->fromJson($value);
+            return $this->fromJson($value);
             case 'collection':
-                return new Collection($this->fromJson($value));
+            return new Collection($this->fromJson($value));
             default:
-                return $value;
+            return $value;
         }
     }
 
