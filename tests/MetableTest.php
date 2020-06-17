@@ -1,11 +1,11 @@
 <?php
 namespace Jobcerto\Metable\Tests;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Collection;
-use Jobcerto\Metable\Tests\Models\Post;
 use Jobcerto\Metable\Tests\Models\Tag;
+use Jobcerto\Metable\Tests\Models\Post;
 use Jobcerto\Metable\Tests\Models\TagMeta;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class MetableTest extends TestCase
 {
@@ -16,7 +16,7 @@ class MetableTest extends TestCase
         parent::setUp();
 
         $this->post = Post::create([
-            'title' => 'Some post Title',
+            'title' => 'Some post Title'
         ]);
 
         $this->tags = ['foo', 'bar', 'baz'];
@@ -27,20 +27,20 @@ class MetableTest extends TestCase
     public function it_can_create_metas()
     {
 
-        $this->post->meta->set('tags', $this->tags);
+        $this->post->fresh()->meta->set('tags', $this->tags);
 
-        $this->assertInstanceOf(Collection::class, $this->post->meta->all());
+        $this->assertInstanceOf(Collection::class, $this->post->fresh()->meta->all());
 
-        $this->assertCount(1, $this->post->meta->all());
+        $this->assertCount(1, $this->post->fresh()->meta->all());
     }
 
     /** @test */
     public function it_can_transform_values()
     {
 
-        $this->post->meta->set('tags', $this->tags);
+        $this->post->fresh()->meta->set('tags', $this->tags);
 
-        $tags = $this->post->meta->get('tags', function ($tags) {
+        $tags = $this->post->fresh()->meta->get('tags', function ($tags) {
             return $tags;
         });
 
@@ -51,7 +51,7 @@ class MetableTest extends TestCase
     public function if_the_value_is_empty_then_return_null()
     {
 
-        $tags = $this->post->meta->get('unknown-meta', function ($tags) {
+        $tags = $this->post->fresh()->meta->get('unknown-meta', function ($tags) {
             return $tags;
         });
 
@@ -62,9 +62,9 @@ class MetableTest extends TestCase
     public function it_can_ignore_transformation_of_values()
     {
 
-        $this->post->meta->set('tags', $this->tags);
+        $this->post->fresh()->meta->set('tags', $this->tags);
 
-        $tags = $this->post->meta->get('tags', function ($tags) {
+        $tags = $this->post->fresh()->meta->get('tags', function ($tags) {
             return $tags ?? [];
         });
 
@@ -75,17 +75,17 @@ class MetableTest extends TestCase
     public function it_can_transform_nested_values()
     {
 
-        $this->post->meta->set('countries', ['brasil' => ['RS', 'SP', 'SC']]);
+        $this->post->fresh()->meta->set('countries', ['brasil' => ['RS', 'SP', 'SC']]);
 
-        $states = $this->post->meta->get('countries.brasil', function ($states) {
+        $states = $this->post->fresh()->meta->get('countries.brasil', function ($states) {
             return collect($states);
         });
 
-        $rs = $this->post->meta->get('countries.brasil.0', function ($rs) {
+        $rs = $this->post->fresh()->meta->get('countries.brasil.0', function ($rs) {
             return $rs . '-transformed';
         });
 
-        $lowercase = $this->post->meta->get('countries.brasil.0', function ($rs) {
+        $lowercase = $this->post->fresh()->meta->get('countries.brasil.0', function ($rs) {
             return strtolower($rs);
         });
 
@@ -98,7 +98,7 @@ class MetableTest extends TestCase
     /** @test */
     public function it_can_assin_a_default_value_when_not_find_the_meta()
     {
-        $meta = $this->post->meta->get('fake-meta', function () {
+        $meta = $this->post->fresh()->meta->get('fake-meta', function () {
             return [];
         });
 
@@ -108,7 +108,7 @@ class MetableTest extends TestCase
     /** @test */
     public function it_can_find_a_value_using_get_and_return_default()
     {
-        $this->post->meta->set('tags', $this->tags);
+        $this->post->fresh()->meta->set('tags', $this->tags);
 
         $this->assertIsArray($this->post->meta->get('tags.4', []));
 
@@ -118,11 +118,11 @@ class MetableTest extends TestCase
     public function it_can_update_all_attributes()
     {
 
-        $this->post->meta->set('tags', $this->tags);
+        $this->post->fresh()->meta->set('tags', $this->tags);
 
         $newTags = ['new foo', 'new bar', 'new baz'];
 
-        $this->assertSame($newTags, $this->post->meta->set('tags', $newTags));
+        $this->assertSame($newTags, $this->post->fresh()->meta->set('tags', $newTags));
     }
 
     /** @test */
@@ -137,12 +137,12 @@ class MetableTest extends TestCase
     public function it_can_find_a_single_meta()
     {
 
-        $this->post->meta->set('tags', $this->tags);
+        $this->post->fresh()->meta->set('tags', $this->tags);
 
-        $this->assertEquals($this->tags, $this->post->meta->get('tags'));
-        $this->assertEquals($this->tags[0], $this->post->meta->get('tags.0'));
-        $this->assertEquals($this->tags[1], $this->post->meta->get('tags.1'));
-        $this->assertEquals($this->tags[2], $this->post->meta->get('tags.2'));
+        $this->assertEquals($this->tags, $this->post->fresh()->meta->get('tags'));
+        $this->assertEquals($this->tags[0], $this->post->fresh()->meta->get('tags.0'));
+        $this->assertEquals($this->tags[1], $this->post->fresh()->meta->get('tags.1'));
+        $this->assertEquals($this->tags[2], $this->post->fresh()->meta->get('tags.2'));
         $this->assertNull($this->post->meta->get('tags.3'));
 
     }
@@ -151,7 +151,7 @@ class MetableTest extends TestCase
     public function it_can_assin_a_default_value_when_not_defining_an_castable_attribute()
     {
 
-        $this->post->meta->set('tags', $this->tags);
+        $this->post->fresh()->meta->set('tags', $this->tags);
 
         $this->assertEquals('default-value', $this->post->meta->get('unknown-meta', 'default-value'));
 
@@ -163,9 +163,9 @@ class MetableTest extends TestCase
 
         $tags = ['foo' => 'value-foo', 'bar' => 'value-bar', 'baz' => 'value-baz'];
 
-        $this->post->meta->set('tags', $tags);
+        $this->post->fresh()->meta->set('tags', $tags);
 
-        $this->assertInstanceOf(\StdClass::class, $this->post->meta->get('tags', 'object'));
+        $this->assertInstanceOf(\StdClass::class, $this->post->fresh()->meta->get('tags', 'object'));
 
     }
 
@@ -174,7 +174,7 @@ class MetableTest extends TestCase
     {
         $this->expectException(\Exception::class);
 
-        $this->post->meta->set('tags.nested-dot', $this->tags);
+        $this->post->fresh()->meta->set('tags.nested-dot', $this->tags);
 
     }
 
@@ -182,9 +182,9 @@ class MetableTest extends TestCase
     public function it_can_find_a_single_meta_and_casts_to_collection()
     {
 
-        $this->post->meta->set('tags', $this->tags);
+        $this->post->fresh()->meta->set('tags', $this->tags);
 
-        $this->assertInstanceOf(Collection::class, $this->post->meta->get('tags', 'collection'));
+        $this->assertInstanceOf(Collection::class, $this->post->fresh()->meta->get('tags', 'collection'));
 
     }
 
@@ -192,7 +192,7 @@ class MetableTest extends TestCase
     public function it_can_find_a_single_meta_and_casts_to_boolean()
     {
 
-        $this->post->meta->set('isSubscribed', true);
+        $this->post->fresh()->meta->set('isSubscribed', true);
 
         $this->assertIsBool($this->post->meta->get('isSubscribed', 'boolean'));
 
@@ -204,11 +204,11 @@ class MetableTest extends TestCase
 
         $favorites = ['favorite-01', 'favorite-02', 'favorite-03'];
 
-        $this->post->meta->set('tags', $this->tags);
+        $this->post->fresh()->meta->set('tags', $this->tags);
 
-        $this->post->meta->set('favorites', $favorites);
+        $this->post->fresh()->meta->set('favorites', $favorites);
 
-        $findMany = $this->post->meta->only('tags', 'favorites', 'unknown-meta');
+        $findMany = $this->post->fresh()->meta->only('tags', 'favorites', 'unknown-meta');
 
         $this->assertArrayHasKey('tags', $findMany);
 
@@ -222,15 +222,15 @@ class MetableTest extends TestCase
     public function it_can_find_a_value_using_search()
     {
 
-        $this->post->meta->set('tags', $this->tags);
+        $this->post->fresh()->meta->set('tags', $this->tags);
 
-        $this->assertEquals($this->post->fresh()->meta->get('tags'), $this->post->fresh()->meta->get('tags'));
+        $this->assertEquals($this->post->fresh()->meta->get('tags'), $this->post->fresh()->fresh()->meta->get('tags'));
     }
 
     /** @test */
     public function it_can_check_if_has_one_meta()
     {
-        $this->post->meta->set('tags', $this->tags);
+        $this->post->fresh()->meta->set('tags', $this->tags);
 
         $this->assertTrue($this->post->meta->has('tags'));
 
@@ -242,11 +242,11 @@ class MetableTest extends TestCase
     public function it_can_delete_a_single_meta()
     {
 
-        $this->post->meta->set('tags', $this->tags);
+        $this->post->fresh()->meta->set('tags', $this->tags);
 
-        $this->post->meta->delete('tags');
+        $this->post->fresh()->meta->delete('tags');
 
-        $this->assertCount(0, $this->post->meta->all());
+        $this->assertCount(0, $this->post->fresh()->meta->all());
 
     }
 
@@ -254,10 +254,10 @@ class MetableTest extends TestCase
     public function it_convert_all_meta_to_array()
     {
 
-        $this->post->meta->set('tags', $this->tags);
-        $this->post->meta->set('other-tags', $this->tags);
+        $this->post->fresh()->meta->set('tags', $this->tags);
+        $this->post->fresh()->meta->set('other-tags', $this->tags);
 
-        $this->assertCount(2, $this->post->meta->toArray());
+        $this->assertCount(2, $this->post->fresh()->meta->toArray());
     }
 
     /** @test */
@@ -266,14 +266,14 @@ class MetableTest extends TestCase
 
         $attributes = [
             'br' => 'brasil',
-            'eu' => 'Estados Únidos',
+            'eu' => 'Estados Únidos'
         ];
 
-        $this->post->meta->set('countries', $attributes);
+        $this->post->fresh()->meta->set('countries', $attributes);
 
-        $this->assertEquals('brasil', $this->post->meta->get('countries.br'));
+        $this->assertEquals('brasil', $this->post->fresh()->meta->get('countries.br'));
 
-        $this->assertEquals('Estados Únidos', $this->post->meta->get('countries.eu'));
+        $this->assertEquals('Estados Únidos', $this->post->fresh()->meta->get('countries.eu'));
 
     }
 
@@ -283,14 +283,14 @@ class MetableTest extends TestCase
 
         $attributes = [
             'br' => 'brasil',
-            'eu' => 'Estados Únidos',
+            'eu' => 'Estados Únidos'
         ];
 
-        $this->post->meta->set('countries', $attributes);
+        $this->post->fresh()->meta->set('countries', $attributes);
 
         $this->assertNull($this->post->meta->get('countries.something-that-is-fake'));
 
-        $this->assertEquals('my-custom-value', $this->post->meta->get('countries.something-that-is-fake', 'my-custom-value'));
+        $this->assertEquals('my-custom-value', $this->post->fresh()->meta->get('countries.something-that-is-fake', 'my-custom-value'));
     }
 
     /** @test */
@@ -306,14 +306,14 @@ class MetableTest extends TestCase
     {
         $countries = [
             'br' => 'brazil',
-            'eu' => 'estados unidos',
+            'eu' => 'estados unidos'
         ];
 
-        $this->post->meta->set('countries', $countries);
+        $this->post->fresh()->meta->set('countries', $countries);
 
-        $this->post->meta->replace('countries.br', 'novo valor');
+        $this->post->fresh()->meta->replace('countries.br', 'novo valor');
 
-        $this->assertEquals('novo valor', $this->post->meta->get('countries.br'));
+        $this->assertEquals('novo valor', $this->post->fresh()->meta->get('countries.br'));
     }
 
     /** @test */
@@ -322,22 +322,22 @@ class MetableTest extends TestCase
 
         $countries = [
             'br' => 'brazil',
-            'eu' => 'estados unidos',
+            'eu' => 'estados unidos'
         ];
 
-        $this->post->meta->set('countries', $countries);
+        $this->post->fresh()->meta->set('countries', $countries);
 
-        $this->post->meta->replace('countries.ru', 'Russia');
+        $this->post->fresh()->meta->replace('countries.ru', 'Russia');
 
-        $this->assertEquals('Russia', $this->post->meta->get('countries.ru'));
+        $this->assertEquals('Russia', $this->post->fresh()->meta->get('countries.ru'));
 
         $countriesWithNewAddedValue = [
             'br' => 'brazil',
             'eu' => 'estados unidos',
-            'ru' => 'Russia',
+            'ru' => 'Russia'
         ];
 
-        $this->assertSame($countriesWithNewAddedValue, $this->post->meta->get('countries'));
+        $this->assertSame($countriesWithNewAddedValue, $this->post->fresh()->meta->get('countries'));
     }
 
     /** @test */
@@ -347,12 +347,12 @@ class MetableTest extends TestCase
 
         $countries = [
             'br' => 'brazil',
-            'eu' => 'estados unidos',
+            'eu' => 'estados unidos'
         ];
 
-        $this->post->meta->set('countries', $countries);
+        $this->post->fresh()->meta->set('countries', $countries);
 
-        $this->post->meta->replace('countries', 'novo valor');
+        $this->post->fresh()->meta->replace('countries', 'novo valor');
     }
 
 }

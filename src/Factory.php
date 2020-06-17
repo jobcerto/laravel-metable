@@ -2,8 +2,8 @@
 
 namespace Jobcerto\Metable;
 
-use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Support\Collection;
+use Illuminate\Contracts\Support\Arrayable;
 
 class Factory implements Arrayable
 {
@@ -11,12 +11,12 @@ class Factory implements Arrayable
 
     public function __construct($subject)
     {
-        $this->subject = $subject->load('metable');
-
+        $this->subject = $subject;
     }
 
     public function relation()
     {
+
         if ($this->subject->relationLoaded('metable')) {
             return $this->subject->metable;
         }
@@ -42,6 +42,7 @@ class Factory implements Arrayable
      */
     public function set(string $key, $value)
     {
+
         if (str_contains($key, '.')) {
             throw new \Exception('you can\'t add a meta using dots on a key');
         }
@@ -87,6 +88,7 @@ class Factory implements Arrayable
      */
     private function tryCallableOrDefault($castable)
     {
+
         if (is_callable($castable)) {
             return $castable(null);
         }
@@ -95,7 +97,7 @@ class Factory implements Arrayable
             return $castable;
         }
 
-        return null;
+        return;
     }
 
     /**
@@ -127,7 +129,7 @@ class Factory implements Arrayable
      */
     public function has(string $key)
     {
-        return $this->subject->metable()->where('key', $key)->exists();
+        return  !  ! $this->subject->metable->where('key', $key)->count();
     }
 
     /**
@@ -165,7 +167,7 @@ class Factory implements Arrayable
         $meta = $this->raw($this->getFirstKey($dotNotation));
 
         tap($meta)->forceFill([
-            $this->qualifiedValueName($dotNotation) => $value,
+            $this->qualifiedValueName($dotNotation) => $value
         ])->save();
 
         return $meta;
@@ -231,7 +233,7 @@ class Factory implements Arrayable
      */
     private function raw(string $key)
     {
-        return $this->subject->metable()->where('key', $key)->first();
+        return $this->subject->metable->where('key', $key)->first();
     }
 
     /**
@@ -243,7 +245,7 @@ class Factory implements Arrayable
      */
     public function wantsReturnDefault($castable)
     {
-        return ! in_array($castable, ['int', 'integer', 'string', 'bool', 'boolean', 'object', 'array', 'json', 'collection']) && ! is_null($castable);
+        return  ! in_array($castable, ['int', 'integer', 'string', 'bool', 'boolean', 'object', 'array', 'json', 'collection']) && ! (null === $castable);
     }
 
     /**
@@ -256,7 +258,7 @@ class Factory implements Arrayable
      */
     private function fromJson($value, $asObject = false)
     {
-        return json_decode(json_encode($value), ! $asObject);
+        return json_decode(json_encode($value),  ! $asObject);
     }
 
     /**
@@ -273,21 +275,21 @@ class Factory implements Arrayable
         switch ($castable) {
             case 'int':
             case 'integer':
-            return (int) $value;
+                return (int) $value;
             case 'string':
-            return (string) $value;
+                return (string) $value;
             case 'bool':
             case 'boolean':
-            return (bool) $value;
+                return (bool) $value;
             case 'object':
-            return $this->fromJson($value, true);
+                return $this->fromJson($value, true);
             case 'array':
             case 'json':
-            return $this->fromJson($value);
+                return $this->fromJson($value);
             case 'collection':
-            return new Collection($this->fromJson($value));
+                return new Collection($this->fromJson($value));
             default:
-            return $value;
+                return $value;
         }
     }
 
